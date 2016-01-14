@@ -1,0 +1,150 @@
+\documentclass[a4paper,11pt]{article}
+
+
+\usepackage{natbib}
+\usepackage{enumerate}
+\usepackage[osf]{mathpazo}
+\usepackage{lastpage} 
+\pagenumbering{arabic}
+\linespread{1.66}
+
+\begin{document}
+
+\begin{flushright}
+Version dated: \today
+\end{flushright}
+\begin{center}
+
+%Title
+\noindent{\Large{\bf{Project thoughts}}}\\
+\bigskip
+\end{center}
+
+What are inapplicable characters (in a phylogenetic sense)?
+If we consider them as true NAs (in a mathsy way) they can just help solving regions of the tree where there are indeed applicable.
+For example, in an artiodactyles tree, a first character (say antlers presence/absence) will be useful as a synapomorphy for cervidae and will group them together (antlers present) in opposition to the other artidactyles (antlers absent).
+Then, any extra characters based on antlers will be inapplicable among non-cervidae and will only be useful in a phylogenetic sense in cervidae.
+
+Molecular characters have any of the five states (ACGT-) and can be coded as ``?'' (as a token for any of these five states).
+In page 7 of the draft, I think the example is not correct: in my mind there is no real parallel between morphological inapplicable characters and molecular \textit{indels} since:
+\begin{enumerate}
+\item Genes are orthologuous so \textit{Indels} as, the four other molecular characters are based on gene's orthology (which is not always the case for morphological characters - e.g. tail color can be homologous). Molecularists seems to have fixed the problem of inapplicability from the start by not allowing it (e.g. the big problems when reconstructing the tree of life: the only attempts to date have used the rusty supertree approach).
+\item \textit{Indels} do bring some phylogenetic information (i.e. the gain/lose of a nucleotide at site \textit{X}) that can be translate to some biological information (e.g. a shift in the DNA traduction frame resulting in new proteins being produced or no proteins at all).
+\end{enumerate}
+In other words: one indel \textit{is} a phylogenetic change as in an inapplicable character is not necessary a change.
+For example in a big vertebrate phylogeny, the character number of digit is not a change in fishes (but is it in snakes?)...
+
+\section{Parsimony and inapplicables}
+
+\subsection{homology/homoplasy} 
+When the presence/absence character is not synapormorphic (i.e. the tail example with presence of the tail in two independent clades), how should any inapplicable character be treated in both clades (i.e. the color of the tail)?
+In other words, if the presence of tail appears two times independently in the phylogeny, is the color of the the tail an homologuous character?
+Or should it be coded something like ``tail color in clade 1'' and ``tail color in clade 2''?
+Also, a wild question: is homoplasy a biological thing or a parsimony thing?
+
+\subsection{Algorithms}
+One idea would be to implement a ``pseudo-super-matrix'' approach:
+\begin{enumerate}
+\item Separate the matrix into multiple matrices:
+\begin{itemize}
+\item the one containing characters applicable among all taxa
+\item multiple blocks containing characters only applicable to blocks of taxa (i.e. cervidae block etc...)
+\end{itemize}
+\item treat only applicable characters and get the most parsimonious trees (all of them)
+\item on all these equally parsimonious trees, add the other matrices blocks and get the most parsimonious trees from there
+\end{enumerate}
+
+Side note: I think computational problems have to be optimised (because that's the cool way to code) but it doesn't need to be the fastest.
+For example, if the Ramirez implementation tested all the configurations (and is justified) better run them all (and use computer clusters to speed up the yoke).
+
+\subsection{Testing the algorithms}
+Generate trees to match the expectations?
+For real datasets pick up dataset with a ``third party'' answer (molecular?).
+I thing there's potentially good candidates among mammals (see Biology Letters paper).
+
+\subsection{Characters non-independance}
+I think that's not a big deal... Characters are totally not independent in DNA.
+Especially in exons were the structure per triplets \textit{has} to be conserved.
+
+\subsection{Other idea}
+Maybe go away from most parsimonious and get a ``best treeS'' approach?
+I.e. if the minimum step is x and the maximum (theoretical) is y get all the trees with the minimum steps +/- a small percentage (5\%?).
+
+\section{Probabilistic approaches}
+Current model (Mk) suffers of the same over-simplifying assumptions than the parsimony approach.
+What is needed is a more relaxed model with:
+\begin{itemize}
+\item A rate heterogeneity for each characters (i.e. characters can have different rates) -- This is already fairly well implemented in MrBayes/BEAST
+\item A relaxed Mk evolutionary model (i.e. the rules of change between states for each character) -- April Wright is kind of working on that
+\item A more efficient way to deal with inapplicable characters?
+\item Get a reversibility parameter? (0$\rightarrow$1 = 1$\rightarrow$0?)
+\end{itemize}
+One idea for dealing with inapplicables would be the same one as for parsimony: just treat them independently in the concerned tree regions?
+
+\subsection{Using the CAT model?}
+CAT model allows to split the characters into discrete categories with their own rate and states frequencies.
+This allows the MCMC to ``choose'' the best category upon which the substitution model (Mk) can be applied \citep{Lartillot01062004}.
+The idea might be to look at the distribution of characters states \textit{a priori} and make the algorithm decide which substitution model to use.
+
+
+\subsection{Combining morphological matrices}
+Maybe we also need a more efficient way to combine pseudo-independant morphological matrices.
+One idea would be to compare matrices and group characters with the same information.
+The user can then check if characters with the same info are (1) independent (keep them both) or (2) synonym (keep one).
+
+
+\section{Side projects}
+\subsection{mulTree}
+Using Bayesian posterior tree distribution in comparative methods (i.e. not just the consensus tree but all the \textit{best} trees).
+
+\subsection{dispRity}
+Using multidimensional approaches for solving ordination problems (i.e. using all PCA axis rather than 2...).
+
+
+
+\section{Cool idea}
+One good thing about solving the inapplicable data riddle is that it can have big implication in developing a ``super-matrix'' approach for morphological characters.
+One analogy is that each exon/intron/UTR in the molecular super matrix could be the equivalent to one character.
+In the molecular super matrix way, some regions of the matrices are just marked as ``?'' because the gene has not been collected (or is inapplicable!) for such and such taxa.
+Transposing that to morphological data, we could combine data in a clever way and mark the data as true missing data as well (``?'').
+If inapplicability is well implemented, then some characters states should be estimated as ``-'' rather than classically any of the available states.
+This will allow to efficiently combine the matrices and run big morphological trees!
+
+
+\section{Misc}
+\subsection{Conferences}
+\begin{itemize}
+\item BES Macro (June - Oxford)
+\item Evolution (17-21 June - Austin)
+\item SVP? (26-29 Oct - Salt Lake City)
+\item EAVP? (6-9 July - Haarlem)
+\end{itemize}
+\subsection{Holidays}
+Finland sometimes in March and Croatia sometimes in April?
+
+
+
+
+
+\section{To do (after 13/01 meeting):}
+Test in parsimony the problem of coding.
+\begin{itemize}
+\item (0) Absent; (1) Present
+\item (0) NA ; (1) Blue ; (2) Red
+\item (0) NA ; (1) Round ; (2) Flat
+\end{itemize}
+
+Try it on real inapplicable (in primates?) data and see how it changes the tree?
+\begin{enumerate}
+\item Try coding with inapplicable (ignored)
+\item Try coding with NAs
+\item Try the splitting matrix solution
+\end{enumerate}
+
+
+\bibliographystyle{sysbio}
+\bibliography{References}
+
+
+\end{document}
+
