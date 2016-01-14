@@ -1,0 +1,10 @@
+# R
+.Rapp.history
+
+# LateX
+*.fls
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.syntecx.gz
