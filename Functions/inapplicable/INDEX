@@ -1,0 +1,21 @@
+SigSut                  Data from Sigwart and Sutton 2007
+SuttonEtAl              Data from Sutton et al. 2012
+VVRB                    Data from Vinther et al. 2008
+add.tip                 Add a tip to a phylogenetic tree
+as.binary               Convert a number to binary
+extract.clade.robust    Extract a clade
+inapplicable-package    Inapplicable data in parsimony analysis
+parsimony.inapp         Calculate parsimony score
+pratchet.inapp          Parsimony ratchet
+prepare.cluster         Prepare a cluster for use in tree search
+                        functions
+prepare.data            Prepare phyDat object
+rearrange.tree          Rearrange phylogenetic tree
+rooted.nni              Rearrange a rooted tree
+sectorial.search        Sectorial search
+set.outgroup            Root a phylogenetic tree
+single.taxon.tree       Single taxon tree
+tbr                     Tree bisection and reconnection
+tree.search             Search for most parsimonious trees
+two.tip.tree            Two-tipped tree
+visualise.character     Visualize optimization for a character
