@@ -1,0 +1,6 @@
+*.out
+obj
+*.swp
+*.prev
+savefile.txt
+*~
