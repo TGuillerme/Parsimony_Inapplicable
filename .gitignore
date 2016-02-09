@@ -8,3 +8,7 @@
 *.blg
 *.fdb_latexmk
 *.syntecx.gz
+
+# Inapplicable package
+
+inapplicable/*
