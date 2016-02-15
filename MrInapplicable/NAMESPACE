@@ -1,2 +1,5 @@
 #Dependencies
 import(ape)
+
+#Functions
+export(make.matrix)
