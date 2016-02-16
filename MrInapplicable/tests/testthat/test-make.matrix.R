@@ -45,6 +45,21 @@ test_that("gen.seq.HKY.binary works", {
     set.seed(1) ; expect_equal(unique(as.vector(gen.seq.HKY.binary(rtree(5),5))), c("1", "0"))
 })
 
+
+
+k.sampler <- function(states) {
+    if(length(states) == 1) {
+        #Only binary characters
+        return(2)
+    } else {
+        return(sample(2:(length(states)+1), 1, prob = states))
+    }
+}
+
+
+
+
+
 #sampling the number of characters states
 k.sampler <- function(states) {
     if(length(states) == 1) {

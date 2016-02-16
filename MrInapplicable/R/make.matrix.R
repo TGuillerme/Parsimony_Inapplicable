@@ -120,6 +120,10 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
     }
 
 
+    rTraitDisc.mk <- function(characters, tree, states, rates, model, ...) {
+        replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = sample.distribution(1, rates), model = "ER", states = seq(from=0, to=(length(states))), ...))
+    }
+
     #GENERATING THE CHARACTERS
     matrix <- replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = rates(1, ...), model = model, states = seq(from=0, to=(length(states)))))
     #matrix <- replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = rates(1,    ), model = model, states = seq(from=0, to=(length(states))))) ; warning("DEBUG MODE")
