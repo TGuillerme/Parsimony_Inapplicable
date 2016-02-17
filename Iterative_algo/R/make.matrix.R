@@ -4,11 +4,12 @@
 #'
 #' @param tree A phylogenetic tree to use for generating the characters.
 #' @param characters The number of morphological characters.
-#' @param model Either an implemented (\code{"ER"} or \code{"HKY"}; see details) or user defined model for generating discrete morphological characters.
+#' @param model Either an implemented (\code{"ER"} or \code{"HKY"}; see details) or user defined model for generating one discrete morphological characters with at least the following arguments: \code{tree}, \code{states}, \code{rates}, \code{substitution}.
 #' @param states A string of probabilities for the number of states for each characters (\code{default = 1}; i.e. 100% binary state characters; see details).
 #' @param rates A function an it's parameters for the rates distribution (see details).
 #' @param substitution A function an it's parameters for the substitutions distribution (see details).
 #' @param ... Any optional arguments to be passed to the model argument.
+#' @param invariant Whether to allow any invariant sites.
 #' @param CI A threshold consistency index value.
 #' @param inapplicable Optional, a vector of characters inapplicability source (either \code{"character"} or \code{"clade"}; see details). The length of this vector must be at maximum half the total number of characters.
 #' @param output Optional, an output file name for writing the matrix out of the \code{R} environement in \code{nexus} format.
@@ -19,7 +20,7 @@
 #' \item The \code{model} arguments must be either a user's defined function for generating the discrete morphological characters (that intakes the states, rates and substitution arguments) or one of the two following:
 #'      \itemize{
 #'          \item \code{"ER"} uses the \code{ape::rTraitDisc} function with the \code{"ER"} model argument (= Mk model).
-#'          \item \code{"HKY"} uses the \code{phyclust::gen.seq.HKY} function with \code{kappa = 2}, \code{pi = runif(4)} (divided by \code{sum(runif(4))}), \code{rate.scale = 1} and \code{L} being the number of \code{characters} and transforms the purines (A, G) into 0 and the pyrimidines (C, T) into 1.
+#'          \item \code{"HKY"} uses the \code{phyclust::gen.seq.HKY} function with \code{kappa} sampled from the \code{substitution} argument, \code{pi = runif(4)} (divided by \code{sum(runif(4))}), \code{rate.scale} sampled from the \code{rates} distribution and \code{L} being the number of \code{characters} and transforms the purines (A, G) into 0 and the pyrimidines (C, T) into 1.
 #'      }
 #'
 #' \item The \code{states} argument attributes a number of states to each character by using the given probability vector for each number of states starting from 2.
@@ -39,7 +40,7 @@
 #' @export
 
 
-make.matrix <- function(tree, characters, states = 1, model = "ER", rates, substitution, ..., CI, inapplicables, output) {
+make.matrix <- function(tree, characters, states = 1, model = "ER", rates, substitution, ..., invariant = FALSE, CI, inapplicables, output) {
 
     #SANITIZNG
     #tree
@@ -66,8 +67,13 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
         implemented_models <- c("ER", "HKY")
         if(all(is.na(match(model, implemented_models)))) stop("The model must be either a user's function or one of the following: ", paste(implemented_models, collapse=", "), sep="")
         #Setting up the model
-        if(model == "ER") model <- rTraitDisc.mk
+        if(model == "ER") {
+            model <- rTraitDisc.mk
+            #Warning on the substitutions:
+            message("substitution parameter is ignored for the ER model.")
+        }
         if(model == "HKY") model <- gen.seq.HKY.binary
+
     } else {
         stop("User functions not implemented yet for model argument.")
         #Add checker for arguments to be passed to users function
@@ -101,6 +107,9 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
         }
     }
 
+    #invariant
+    check.class(invariant, "logical")
+
     #inapplicable
     if(!missing(inapplicable)) {
         check.class(inapplicable, "character")
@@ -125,6 +134,15 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
     }
 
     #GENERATING THE CHARACTERS
+
+
+    matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution, ...))
+    #matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution))  ; warning("DEBUG MODE")
+
+
+model <- gen.seq.HKY.binary
+
+
     matrix <- replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = rates(1, ...), model = model, states = seq(from=0, to=(length(states)))))
     #matrix <- replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = rates(1,    ), model = model, states = seq(from=0, to=(length(states))))) ; warning("DEBUG MODE")
 

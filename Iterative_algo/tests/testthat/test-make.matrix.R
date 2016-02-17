@@ -37,15 +37,42 @@ test_that("proportional.distribution works", {
 #Testing gen.seq.HKY.binary
 test_that("gen.seq.HKY.binary works", {
     #errors
-    expect_error(gen.seq.HKY.binary("a",5))
-    expect_error(gen.seq.HKY.binary(5,5))
+    expect_error(gen.seq.HKY.binary("a", c(runif, 2, 2), c(runif, 1, 1)))
+    expect_error(gen.seq.HKY.binary(5, c(runif, 2, 2), c(runif, 1, 1)))
+    expect_error(gen.seq.HKY.binary(rtree(5), runif, c(runif, 1, 1)))
+    expect_error(gen.seq.HKY.binary(rtree(5), c(runif, 1, 1), runif))
 
-    #results is a 5 by 5 matrix
-    expect_equal(dim(gen.seq.HKY.binary(rtree(5),5)), c(5,5))
-    set.seed(1) ; expect_equal(unique(as.vector(gen.seq.HKY.binary(rtree(5),5))), c("1", "0"))
+    #results is a vector of length 5 (characters)
+    expect_equal(length(gen.seq.HKY.binary(rtree(5), c(runif, 2, 2), c(runif, 1, 1))), 5)
+    expect_is(gen.seq.HKY.binary(rtree(5), c(runif, 2, 2), c(runif, 1, 1)), "character")
+    set.seed(1) ; expect_equal(unique(as.vector(gen.seq.HKY.binary(rtree(5), c(runif, 2, 2), c(runif, 1, 1)))), c("1", "0"))
+})
+
+#Testing k.sampler
+test_that("k.sampler works", {
+    #binary states (most of the cases)
+    expect_equal(k.sampler("a"), 2)
+    expect_equal(k.sampler(1), 2)
+    expect_equal(k.sampler(0.5), 2)
+
+    #multistates (up to 4 states)
+    set.seed(1) ; expect_equal( sort(unique(replicate(100, k.sampler(c(0.34, 0.33, 0.33))))), c(2,3,4) )
+    #Proportion respected
+    set.seed(1) ; test <- replicate(10000, k.sampler(c(0.80, 0.15, 0.05)))
+    expect_equal( sort(unique(test)), c(2,3,4) )
+    expect_equal( length(which(test == 2))/10000, 0.7932 )
+    expect_equal( length(which(test == 3))/10000, 0.1535 )
+    expect_equal( length(which(test == 4))/10000, 0.0533 )
 })
 
 
+#Testing rTraitDisc.mk
+test_that("rTraitDisc.mk works", {
+    #
+
+})
+
+rTraitDisc.mk <- function(tree, substitution, rates, states, ...)
 
 k.sampler <- function(states) {
     if(length(states) == 1) {
