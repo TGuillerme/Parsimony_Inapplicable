@@ -3,9 +3,9 @@
 #' 
 #' Some description
 #' 
-#' @name MrInapplicable-package
+#' @name Iterative_algo-package
 #'
-#' @aliases MrInapplicable
+#' @aliases Iterative_algo
 #'
 #' @docType package
 #'
