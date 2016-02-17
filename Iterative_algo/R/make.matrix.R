@@ -67,12 +67,12 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
         implemented_models <- c("ER", "HKY")
         if(all(is.na(match(model, implemented_models)))) stop("The model must be either a user's function or one of the following: ", paste(implemented_models, collapse=", "), sep="")
         #Setting up the model
-        if(model == "ER") {
+        if(class(model) != "function" && model == "ER") {
             model <- rTraitDisc.mk
             #Warning on the substitutions:
-            message("substitution parameter is ignored for the ER model.")
+            message("Substitution parameter is ignored for the ER model.")
         }
-        if(model == "HKY") model <- gen.seq.HKY.binary
+        if(class(model) != "function" && model == "HKY") model <- gen.seq.HKY.binary
 
     } else {
         stop("User functions not implemented yet for model argument.")
@@ -129,70 +129,65 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
     }
 
 
-    rTraitDisc.mk <- function(characters, tree, states, rates, model, ...) {
-        replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = sample.distribution(1, rates), model = "ER", states = seq(from=0, to=(length(states))), ...))
-    }
-
     #GENERATING THE CHARACTERS
-
-
+    #Creating the matrix
     matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution, ...))
     #matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution))  ; warning("DEBUG MODE")
 
-
-model <- gen.seq.HKY.binary
-
-
-    matrix <- replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = rates(1, ...), model = model, states = seq(from=0, to=(length(states)))))
-    #matrix <- replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = rates(1,    ), model = model, states = seq(from=0, to=(length(states))))) ; warning("DEBUG MODE")
-
-    #Repeat the invariant characters sampling
-    while(any(apply(matrix, 2, is.invariant))) {
-        matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), rTraitDisc(tree, k = k.sampler(states), rate = rates(1, ...), model = model, states = seq(from=0, to=(length(states)))))
-        #matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), rTraitDisc(tree, k = k.sampler(states), rate = rates(1,    ), model = model, states = seq(from=0, to=(length(states))))) ; warning("DEBUG MODE")
-    }
-
-    #Add inapplicable characters (from character)
-    if(!missing(inapplicable) & inap.source == "character") {
-        #Select all the pairs of characters
-        characters1 <- seq(from=1, to=characters, by=2)
-        characters2 <- seq(from=2, to=characters, by=2)
-
-        #Take a percentage of the shortest vector and use them for "inapplicability"
-        if(length(characters2) < length(characters1)) {
-            inapplicators <- characters2[1:inapplicable]
-        } else {
-            inapplicators <- characters1[1:inapplicable]
-        }
-
-        #making characters inapplicable
-        for(inap in 1:inapplicable) {
-            matrix[which(matrix[,inapplicators[inap]] == "0"), inapplicators[inap]+1] <- "-"
+    if(invariant == FALSE) {
+        #Repeat the invariant characters sampling
+        while(any(apply(matrix, 2, is.invariant))) {
+            matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), model(tree = tree, states = states, rates = rates, substitution = substitution, ...))
+            #matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), model(tree = tree, states = states, rates = rates, substitution = substitution)) ; warning("DEBUG")
         }
     }
 
-    #Add inapplicable characters (from clades)
-    if(!missing(inapplicable) & inap.source == "clade") {
-        #Select some clades
-        clades <- replicate(inapplicable, select.clade(tree), simplify = FALSE)
-        #Make them inapplicable in the matrix
-        for(inap in 1:inapplicable) {
-            matrix[clades[[inap]], inap] <- "-"
-        }
-    }
+    #Adding the row names
+    rownames(matrix) <- tree$tip.label
+
+    
+    #ADDING INAPPLICABLE CHARACTERS
+
+
+    # #Add inapplicable characters (from character)
+    # if(!missing(inapplicable) & inap.source == "character") {
+    #     #Select all the pairs of characters
+    #     characters1 <- seq(from=1, to=characters, by=2)
+    #     characters2 <- seq(from=2, to=characters, by=2)
+
+    #     #Take a percentage of the shortest vector and use them for "inapplicability"
+    #     if(length(characters2) < length(characters1)) {
+    #         inapplicators <- characters2[1:inapplicable]
+    #     } else {
+    #         inapplicators <- characters1[1:inapplicable]
+    #     }
+
+    #     #making characters inapplicable
+    #     for(inap in 1:inapplicable) {
+    #         matrix[which(matrix[,inapplicators[inap]] == "0"), inapplicators[inap]+1] <- "-"
+    #     }
+    # }
+
+    # #Add inapplicable characters (from clades)
+    # if(!missing(inapplicable) & inap.source == "clade") {
+    #     #Select some clades
+    #     clades <- replicate(inapplicable, select.clade(tree), simplify = FALSE)
+    #     #Make them inapplicable in the matrix
+    #     for(inap in 1:inapplicable) {
+    #         matrix[clades[[inap]], inap] <- "-"
+    #     }
+    # }
 
 
     #OUTPUTING THE FILE
-    if(!missing(output)) {
-        if(output == "nexus") {
-            #Modifying write.nexus.data entry
-            write.nexus.data.tmp <- write.nexus.data
-            body(write.nexus.data.tmp)[[2]] <- quote(format <- match.arg(toupper(format), c("DNA", "PROTEIN", "STANDARD")))
-            #Saving the file as a nexus
-            write.nexus.data.tmp(matrix, file=paste(output.name, ".nex", sep=""), format = "standard")
-            #Verbose
-            cat(paste("Matrix saved as ", output.name, ".nex in current directory.\n", sep=""))
-        }
+    if(!missing(output)) {{
+        #Modifying write.nexus.data entry
+        write.nexus.data.tmp <- write.nexus.data
+        body(write.nexus.data.tmp)[[2]] <- quote(format <- match.arg(toupper(format), c("DNA", "PROTEIN", "STANDARD")))
+        #Saving the file as a nexus
+        write.nexus.data.tmp(matrix, file=paste(output, ".nex", sep=""), format = "standard")
+        #Verbose
+        cat(paste("Matrix saved as ", output, ".nex in current directory.\n", sep=""))
     }
     
     return(matrix)

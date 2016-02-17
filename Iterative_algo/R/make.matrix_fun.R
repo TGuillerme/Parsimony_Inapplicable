@@ -45,30 +45,8 @@ gen.seq.HKY.binary <- function(tree, substitution, rates, states = 1, ...) {
     character <- gsub("C", "1", character)
     character <- gsub("T", "1", character)
 
-    #Adding row names
-    #rownames(character) <- tree$tip.label
-
     return(character)
 }
-
-rTraitDisc.mk <- function(tree, substitution, rates, states, ...) {
-    #Use the rTraitDisc function with ER model
-    return(as.character( rTraitDisc(tree, k = k.sampler(states), rate = sample.distribution(1, rates), model = "ER", states = seq(from=0, to=(length(states))), ...) ))
-}
-
-
-    rTraitDisc.mk <- function(characters, tree, states, rates, model, ...) {
-        replicate(characters, rTraitDisc(tree, k = k.sampler(states), rate = sample.distribution(1, rates), model = "ER", states = seq(from=0, to=(length(states))), ...))
-    }
-
-    #GENERATING THE CHARACTERS
-
-
-    matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution, ...))
-    #matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution))  ; warning("DEBUG MODE")
-
-
-
 
 #sampling the number of characters states
 k.sampler <- function(states) {
@@ -78,6 +56,12 @@ k.sampler <- function(states) {
     } else {
         return(sample(2:(length(states)+1), 1, prob = states))
     }
+}
+
+#Geneterating a character using the mk model
+rTraitDisc.mk <- function(tree, substitution, rates, states, ...) {
+    #Use the rTraitDisc function with ER model
+    return(as.character( rTraitDisc(tree, k = k.sampler(states), rate = sample.distribution(1, rates), model = "ER", states = seq(from=0, to=(length(states))), ...) ))
 }
 
 #Invariant characters detector
