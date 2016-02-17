@@ -1,5 +1,5 @@
 library(devtools)
-install("../Iterative_algo")
+install("../IterativeAlgo")
 library(Iterative_algo)
 library(Claddis)
 install_github("cran/phylosim")

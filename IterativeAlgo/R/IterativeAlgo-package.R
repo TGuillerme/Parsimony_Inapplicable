@@ -3,9 +3,9 @@
 #' 
 #' Some description
 #' 
-#' @name Iterative_algo-package
+#' @name IterativeAlgo-package
 #'
-#' @aliases Iterative_algo
+#' @aliases IterativeAlgo
 #'
 #' @docType package
 #'
