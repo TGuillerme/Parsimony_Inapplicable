@@ -10,7 +10,6 @@
 #' @param substitution A function an it's parameters for the substitutions distribution (see details).
 #' @param ... Any optional arguments to be passed to the model argument.
 #' @param invariant Whether to allow any invariant sites.
-##' @param CI A threshold consistency index value.
 ##' @param inapplicable Optional, a vector of characters inapplicability source (either \code{"character"} or \code{"clade"}; see details). The length of this vector must be at maximum half the total number of characters.
 ##' @param output Optional, an output file name for writing the matrix out of the \code{R} environement in \code{nexus} format.
 #' @param verbose Whether to be verbose or not.

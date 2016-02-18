@@ -1,15 +1,15 @@
-# devtools::build_win(version = "R-devel")
-#' Some title
+#' Inapplicable data stuff
 #' 
-#' Some description
+#' Utilities for inapplicable project
 #' 
 #' @name IterativeAlgo-package
-#'
 #' @aliases IterativeAlgo
-#'
 #' @docType package
-#'
 #' @author Thomas Guillerme <guillert@tcd.ie>
+#' Maintainer: Thomas Guillerme
 #'
 #' @import ape
-#' @import phyclust
+#' @importFrom phyclust gen.seq.HKY
+#' @importFrom phangorn phyDat parsimony dist.hamming NJ optim.parsimony CI RI RF.dist
+
+NULL
