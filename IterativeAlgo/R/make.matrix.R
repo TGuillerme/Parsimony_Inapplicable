@@ -1,21 +1,22 @@
 #' @title Generates a morphological matrix.
 #'
-#' @description Generates a morphological matrix using \code{\link[ape]{rTraitDisc}} function with some optional inaplicable characters and allows to save it in various formats out of \code{R} environment.
+#' @description Generates a morphological matrix using \code{\link[ape]{rTraitDisc}} function with some optional inapplicable characters and allows to save it in various formats out of \code{R} environment.
 #'
 #' @param tree A phylogenetic tree to use for generating the characters.
 #' @param characters The number of morphological characters.
 #' @param model Either an implemented (\code{"ER"} or \code{"HKY"}; see details) or user defined model for generating one discrete morphological characters with at least the following arguments: \code{tree}, \code{states}, \code{rates}, \code{substitution}.
-#' @param states A string of probabilities for the number of states for each characters (\code{default = 1}; i.e. 100% binary state characters; see details).
+#' @param states A string of probabilities for the number of states for each characters (\code{default = 1}; i.e. 100\% binary state characters; see details).
 #' @param rates A function an it's parameters for the rates distribution (see details).
 #' @param substitution A function an it's parameters for the substitutions distribution (see details).
 #' @param ... Any optional arguments to be passed to the model argument.
 #' @param invariant Whether to allow any invariant sites.
-#' @param CI A threshold consistency index value.
-#' @param inapplicable Optional, a vector of characters inapplicability source (either \code{"character"} or \code{"clade"}; see details). The length of this vector must be at maximum half the total number of characters.
-#' @param output Optional, an output file name for writing the matrix out of the \code{R} environement in \code{nexus} format.
+##' @param CI A threshold consistency index value.
+##' @param inapplicable Optional, a vector of characters inapplicability source (either \code{"character"} or \code{"clade"}; see details). The length of this vector must be at maximum half the total number of characters.
+##' @param output Optional, an output file name for writing the matrix out of the \code{R} environement in \code{nexus} format.
+#' @param verbose Whether to be verbose or not.
 #'
 #' @details
-#' \itemize {
+#' \itemize{
 #' 
 #' \item The \code{model} arguments must be either a user's defined function for generating the discrete morphological characters (that intakes the states, rates and substitution arguments) or one of the two following:
 #'      \itemize{
@@ -28,19 +29,31 @@
 #' 
 #' \item The \code{rates} and \code{substitution} arguments attributes a distribution function and it's optional parameters to a model. For example \code{rates = c(runif, 1, 10)} attributes a uniform distribution between 1 and 10 for the rates distribution.
 #' 
-#' \item The \code{inapplicable} argument intakes a vector of character inapplicability source rendering a number of characters inapplicable using the following sources:
-#'      \itemize{
-#'          \item \code{"character"} draws inapplicable characters directly from the character matrix, ignoring the phylogeny (i.e. for a random character X, an other random character Y will have inappicable characters fro each character states 0 for character X).
-#'          \item \code{"clade"} draws inapplicable characters from the phylogeny: it will randomly apply inapplicable characters states for some characters by randomly selecting clades from the provided tree.
-#'      }
-#' For example \code{inapplicable = c(rep("character", 2), rep("clade", 2))} will generate 4 characters with inapplicable data, two using previous characters and two other using random clades.
+# ' \item The \code{inapplicables} argument intakes a vector of character inapplicability source rendering a number of characters inapplicable using the following sources:
+# '      \itemize{
+# '          \item \code{"character"} draws inapplicable characters directly from the character matrix, ignoring the phylogeny (i.e. for a random character X, an other random character Y will have inappicable characters fro each character states 0 for character X).
+# '          \item \code{"clade"} draws inapplicable characters from the phylogeny: it will randomly apply inapplicable characters states for some characters by randomly selecting clades from the provided tree.
+# '      }
+# ' For example \code{inapplicables = c(rep("character", 2), rep("clade", 2))} will generate 4 characters with inapplicable data, two using previous characters and two other using random clades.
+#' 
 #' }
 #' 
+#' @examples
+#' ## A random tree with 10 tips
+#' tree <- rcoal(10)
+#' ## setting up the parameters
+#' my_rates = c(rgamma, 1, 1) # A gamma rate distribution with of shape alpha = 0.5
+#' my_substitutions = c(runif, 2, 2) # A fixed substitution rate of 2 (T/T ratio in HKY)
+#'
+#' ## A pure Mk matrix (10*50)
+#' matrixMk <- make.matrix(tree, characters = 50, model = "ER", rates = my_rates)
+#' ## HKY binary (10*50)
+#' matrixHKY <- make.matrix(tree, characters = 50, model="HKY", rates = my_rates, substitution = my_substitutiom)
 #' @author Thomas Guillerme
 #' @export
 
 
-make.matrix <- function(tree, characters, states = 1, model = "ER", rates, substitution, ..., invariant = FALSE, CI, inapplicables, output) {
+make.matrix <- function(tree, characters, states = 1, model = "ER", rates, substitution, ..., invariant = FALSE, verbose = FALSE) {
 
     #SANITIZNG
     #tree
@@ -70,6 +83,7 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
         if(class(model) != "function" && model == "ER") {
             model <- rTraitDisc.mk
             #Warning on the substitutions:
+            substitution <- c(runif, 1, 1)
             message("Substitution parameter is ignored for the ER model.")
         }
         if(class(model) != "function" && model == "HKY") model <- gen.seq.HKY.binary
@@ -110,86 +124,97 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
     #invariant
     check.class(invariant, "logical")
 
-    #inapplicable
-    if(!missing(inapplicable)) {
-        check.class(inapplicable, "character")
-        inap.source_options <- c("character", "clade")
-        if(all(is.na(match(unique(inapplicable), inap.source_options)))) {
-            stop("inapplicable argument must be a vector containing at least one of the following: ", paste(inap.source_options, collapse=", "), sep="")
-        }        
-        if(inapplicable > characters/2) {
-            stop("Only half the number of characters can be inapplicable.")
-        }
-    }
+    #verbose
+    check.class(verbose, "logical")
 
-    #output
-    if(!missing(output)) {
-        check.class(output, "character")
-        check.length(output, 1, " must be a single string of characters.")
-    }
+    # #inapplicables
+    # if(!missing(inapplicables)) {
+    #     check.class(inapplicables, "character")
+    #     inap.source_options <- c("character", "clade")
+    #     if(all(is.na(match(unique(inapplicables), inap.source_options)))) {
+    #         stop("inapplicables argument must be a vector containing at least one of the following: ", paste(inap.source_options, collapse=", "), sep="")
+    #     }        
+    #     if(inapplicables > characters/2) {
+    #         stop("Only half the number of characters can be inapplicables")
+    #     }
+    # }
 
+    # #output
+    # if(!missing(output)) {
+    #     check.class(output, "character")
+    #     check.length(output, 1, " must be a single string of characters.")
+    # }
 
     #GENERATING THE CHARACTERS
+    #Isolating the arguments
+    arguments <- as.list(substitute(list(tree = tree, states = states, rates = rates, substitution = substitution, ...)))[-1L]
+
     #Creating the matrix
-    matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution, ...))
-    #matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution))  ; warning("DEBUG MODE")
+    if(verbose == TRUE) cat(paste("Generating a matrix of ", characters, " characters for ", Ntip(tree), " taxa:...", sep=""))
+    matrix <- replicate(characters, do.call(model, arguments))
+    if(verbose == TRUE) cat("Done.\n")
+
 
     if(invariant == FALSE) {
-        #Repeat the invariant characters sampling
-        while(any(apply(matrix, 2, is.invariant))) {
-            matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), model(tree = tree, states = states, rates = rates, substitution = substitution, ...))
-            #matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), model(tree = tree, states = states, rates = rates, substitution = substitution)) ; warning("DEBUG")
+        if(any(apply(matrix, 2, is.invariant))) {
+            if(verbose == TRUE) cat("Re-simulating ", length(which(apply(matrix, 2, is.invariant)) == TRUE), " invariant characters:", sep="") 
+            #Repeat the invariant characters sampling
+            while(any(apply(matrix, 2, is.invariant))) {
+                matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), do.call(model, arguments))
+                if(verbose == TRUE) cat(".")
+                #matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), model(tree = tree, states = states, rates = rates, substitution = substitution     )) ; warning("DEBUG")
+            }
+            if(verbose == TRUE) cat("Done.\n")
         }
     }
 
     #Adding the row names
     rownames(matrix) <- tree$tip.label
-
+    return(matrix)
     
+
     #ADDING INAPPLICABLE CHARACTERS
 
 
     # #Add inapplicable characters (from character)
-    # if(!missing(inapplicable) & inap.source == "character") {
+    # if(!missing(inapplicables) & inap.source == "character") {
     #     #Select all the pairs of characters
     #     characters1 <- seq(from=1, to=characters, by=2)
     #     characters2 <- seq(from=2, to=characters, by=2)
 
     #     #Take a percentage of the shortest vector and use them for "inapplicability"
     #     if(length(characters2) < length(characters1)) {
-    #         inapplicators <- characters2[1:inapplicable]
+    #         inapplicators <- characters2[1:inapplicables]
     #     } else {
-    #         inapplicators <- characters1[1:inapplicable]
+    #         inapplicators <- characters1[1:inapplicables]
     #     }
 
     #     #making characters inapplicable
-    #     for(inap in 1:inapplicable) {
+    #     for(inap in 1:inapplicables) {
     #         matrix[which(matrix[,inapplicators[inap]] == "0"), inapplicators[inap]+1] <- "-"
     #     }
     # }
 
     # #Add inapplicable characters (from clades)
-    # if(!missing(inapplicable) & inap.source == "clade") {
+    # if(!missing(inapplicables) & inap.source == "clade") {
     #     #Select some clades
-    #     clades <- replicate(inapplicable, select.clade(tree), simplify = FALSE)
+    #     clades <- replicate(inapplicables, select.clade(tree), simplify = FALSE)
     #     #Make them inapplicable in the matrix
-    #     for(inap in 1:inapplicable) {
+    #     for(inap in 1:inapplicables) {
     #         matrix[clades[[inap]], inap] <- "-"
     #     }
     # }
 
 
-    #OUTPUTING THE FILE
-    if(!missing(output)) {{
-        #Modifying write.nexus.data entry
-        write.nexus.data.tmp <- write.nexus.data
-        body(write.nexus.data.tmp)[[2]] <- quote(format <- match.arg(toupper(format), c("DNA", "PROTEIN", "STANDARD")))
-        #Saving the file as a nexus
-        write.nexus.data.tmp(matrix, file=paste(output, ".nex", sep=""), format = "standard")
-        #Verbose
-        cat(paste("Matrix saved as ", output, ".nex in current directory.\n", sep=""))
-    }
+    # #OUTPUTING THE FILE
+    # if(!missing(output)) {
+    #     #Modifying write.nexus.data entry
+    #     write.nexus.data.tmp <- write.nexus.data
+    #     body(write.nexus.data.tmp)[[2]] <- quote(format <- match.arg(toupper(format), c("DNA", "PROTEIN", "STANDARD")))
+    #     #Saving the file as a nexus
+    #     write.nexus.data.tmp(matrix, file=paste(output, ".nex", sep=""), format = "standard")
+    #     #Verbose
+    #     cat(paste("Matrix saved as ", output, ".nex in current directory.\n", sep=""))
+    # }
     
-    return(matrix)
-
 }
