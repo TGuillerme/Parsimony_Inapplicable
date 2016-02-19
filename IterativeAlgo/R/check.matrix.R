@@ -32,7 +32,7 @@
 #' @author Thomas Guillerme
 #' @export
 
-check.matrix <- function(matrix, parismony = "fitch", first.tree = c(dist.hamming, NJ), orig.tree, distance = RF.dist, ...) {
+check.matrix <- function(matrix, parsimony = "fitch", first.tree = c(phangorn::dist.hamming, phangorn::NJ), orig.tree, distance = phangorn::RF.dist, ...) {
     #SANITIZNG
 
     #matrix
@@ -55,7 +55,7 @@ check.matrix <- function(matrix, parismony = "fitch", first.tree = c(dist.hammin
 
     #first.tree
     if(class(first.tree) != "function") {
-        if(any(unlist(lapply(first.tree, class))) != "function") {
+        if(any(unlist(lapply(first.tree, class)) != "function")) {
             stop("first.tree argument must be a list of functions to calculate the first tree.")
         }
     }
@@ -63,7 +63,7 @@ check.matrix <- function(matrix, parismony = "fitch", first.tree = c(dist.hammin
     #orig.tree
     check.class(orig.tree, "phylo")
     #must be same size as the matrix
-    if(nrow(matrix) != Ntip(orig.tree)) {
+    if(any(sort(row.names(matrix)) != sort(orig.tree$tip.label))) {
         stop("Provided orig.tree has not the same number of taxa as the matrix.")
     }
 
