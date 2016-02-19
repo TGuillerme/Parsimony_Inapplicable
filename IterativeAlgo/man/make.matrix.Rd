@@ -26,8 +26,6 @@ make.matrix(tree, characters, states = 1, model = "ER", rates, substitution,
 
 \item{verbose}{Whether to be verbose or not.}
 
-\item{CI}{A threshold consistency index value.}
-
 \item{inapplicable}{Optional, a vector of characters inapplicability source (either \code{"character"} or \code{"clade"}; see details). The length of this vector must be at maximum half the total number of characters.}
 
 \item{output}{Optional, an output file name for writing the matrix out of the \code{R} environement in \code{nexus} format.}
