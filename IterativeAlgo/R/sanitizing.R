@@ -22,8 +22,6 @@ check.class<-function(object, class, msg, errorif=FALSE) {
             }        
         }
     } else {
-    #check if object is class in a cascade (class[1] else class[2] else class[3], etc..)
-    #returns error only if object is not of any class
         for (i in 1:length(class)) {
             if(class(object) == class[i]) {
                 class.test<-class[i]
@@ -53,5 +51,3 @@ check.length<-function(object, length, msg, errorif=FALSE) {
         }        
     }
 }
-
-
