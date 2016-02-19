@@ -32,7 +32,7 @@
 #' @author Thomas Guillerme
 #' @export
 
-check.matrix <- function(matrix, parsimony = "fitch", first.tree = c(phangorn::dist.hamming, phangorn::NJ), orig.tree, distance = phangorn::RF.dist, ..., contrast.matrix) {
+check.matrix <- function(matrix, orig.tree, parsimony = "fitch", first.tree = c(phangorn::dist.hamming, phangorn::NJ), distance = phangorn::RF.dist, ..., contrast.matrix) {
     #SANITIZNG
 
     #matrix

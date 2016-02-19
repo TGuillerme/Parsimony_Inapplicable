@@ -8,7 +8,7 @@
 #' @param states A string of probabilities for the number of states for each characters (\code{default = 1}; i.e. 100\% binary state characters; see details).
 #' @param rates A function an it's parameters for the rates distribution (see details).
 #' @param substitution A function an it's parameters for the substitutions distribution (see details).
-#' @param ... Any optional arguments to be passed to the model argument.
+##' @param ... Any optional arguments to be passed to the model argument.
 #' @param invariant Whether to allow any invariant sites.
 ##' @param inapplicable Optional, a vector of characters inapplicability source (either \code{"character"} or \code{"clade"}; see details). The length of this vector must be at maximum half the total number of characters.
 ##' @param output Optional, an output file name for writing the matrix out of the \code{R} environement in \code{nexus} format.
@@ -52,7 +52,7 @@
 #' @export
 
 
-make.matrix <- function(tree, characters, states = 1, model = "ER", rates, substitution, ..., invariant = FALSE, verbose = FALSE) {
+make.matrix <- function(tree, characters, states = 1, model = "ER", rates, substitution, invariant = FALSE, verbose = FALSE) { #...
 
     #SANITIZNG
     #tree
@@ -146,11 +146,12 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
 
     #GENERATING THE CHARACTERS
     #Isolating the arguments
-    arguments <- as.list(substitute(list(tree = tree, states = states, rates = rates, substitution = substitution, ...)))[-1L]
+    #arguments <- as.list(substitute(list(tree = tree, states = states, rates = rates, substitution = substitution, ...)))[-1L]
 
     #Creating the matrix
     if(verbose == TRUE) cat(paste("Generating a matrix of ", characters, " characters for ", Ntip(tree), " taxa:...", sep=""))
-    matrix <- replicate(characters, do.call(model, arguments))
+    #matrix <- replicate(characters, do.call(model, arguments))
+        matrix <- replicate(characters, model(tree = tree, states = states, rates = rates, substitution = substitution))
     if(verbose == TRUE) cat("Done.\n")
 
 
@@ -159,9 +160,9 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
             if(verbose == TRUE) cat("Re-simulating ", length(which(apply(matrix, 2, is.invariant)) == TRUE), " invariant characters:", sep="") 
             #Repeat the invariant characters sampling
             while(any(apply(matrix, 2, is.invariant))) {
-                matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), do.call(model, arguments))
+                #matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), do.call(model, arguments))
+                matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), model(tree = tree, states = states, rates = rates, substitution = substitution))
                 if(verbose == TRUE) cat(".")
-                #matrix[, which(apply(matrix, 2, is.invariant) == TRUE)] <- replicate(length(which(apply(matrix, 2, is.invariant) == TRUE)), model(tree = tree, states = states, rates = rates, substitution = substitution     )) ; warning("DEBUG")
             }
             if(verbose == TRUE) cat("Done.\n")
         }

@@ -5,7 +5,7 @@
 \title{Generates a morphological matrix.}
 \usage{
 make.matrix(tree, characters, states = 1, model = "ER", rates, substitution,
-  ..., invariant = FALSE, verbose = FALSE)
+  invariant = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{tree}{A phylogenetic tree to use for generating the characters.}
@@ -20,11 +20,11 @@ make.matrix(tree, characters, states = 1, model = "ER", rates, substitution,
 
 \item{substitution}{A function an it's parameters for the substitutions distribution (see details).}
 
-\item{...}{Any optional arguments to be passed to the model argument.}
-
 \item{invariant}{Whether to allow any invariant sites.}
 
 \item{verbose}{Whether to be verbose or not.}
+
+\item{...}{Any optional arguments to be passed to the model argument.}
 
 \item{inapplicable}{Optional, a vector of characters inapplicability source (either \code{"character"} or \code{"clade"}; see details). The length of this vector must be at maximum half the total number of characters.}
 
