@@ -1,6 +1,6 @@
 #' @title Check morphological matrix consistency.
 #'
-#' @description Performs a quick and dirty checking of the phylogenetic signal in a morphological matrix using parismony.
+#' @description Performs a quick and dirty checking of the phylogenetic signal in a morphological matrix using parsimony.
 #'
 #' @param matrix A discrete morphological matrix.
 #' @param parsimony Either the parsimony algorithm to be passed to \code{\link[phangorn]{optim.parsimony}} or a parsimony function that can take a \code{\link[phangorn]{phyDat}} object as an input.
@@ -32,7 +32,7 @@
 #' @author Thomas Guillerme
 #' @export
 
-check.matrix <- function(matrix, parsimony = "fitch", first.tree = c(phangorn::dist.hamming, phangorn::NJ), orig.tree, distance = phangorn::RF.dist, ...) {
+check.matrix <- function(matrix, parsimony = "fitch", first.tree = c(phangorn::dist.hamming, phangorn::NJ), orig.tree, distance = phangorn::RF.dist, ..., contrast.matrix) {
     #SANITIZNG
 
     #matrix
@@ -44,12 +44,12 @@ check.matrix <- function(matrix, parsimony = "fitch", first.tree = c(phangorn::d
         implemented_parsimony <- c("fitch", "sankoff")
         if(all(is.na(match(parsimony, implemented_parsimony)))) stop("The parsimony argument must be either a user's function or one of the following: ", paste(implemented_parsimony, collapse=", "), sep="")
         #setting the parsimony algorithm
-        use.optim.parisomy <- TRUE
+        use.optim.parsimony <- TRUE
         parsimony.algorithm <- phangorn::optim.parsimony
         method <- parsimony
     } else {
         stop("User functions not implemented yet for model argument.")
-        use.optim.parisomy <- FALSE
+        use.optim.parsimony <- FALSE
         parsimony.algorithm <- parsimony
     }
 
@@ -61,55 +61,77 @@ check.matrix <- function(matrix, parsimony = "fitch", first.tree = c(phangorn::d
     }
 
     #orig.tree
-    check.class(orig.tree, "phylo")
-    #must be same size as the matrix
-    if(any(sort(row.names(matrix)) != sort(orig.tree$tip.label))) {
-        stop("Provided orig.tree has not the same number of taxa as the matrix.")
+    if(!missing(orig.tree)) {
+        check.class(orig.tree, "phylo")
+        #must be same size as the matrix
+        if(any(sort(row.names(matrix)) != sort(orig.tree$tip.label))) {
+            stop("Provided orig.tree has not the same number of taxa as the matrix.")
+        }
+        #distance
+        check.class(distance, "function")
     }
 
-    #distance
-    check.class(distance, "function")
+    #contrast.matrix
+    if(!missing(contrast.matrix)) {
+        check.class(contrast.matrix, "matrix")
+    }
 
 
     #CHECKING THE MATRIX
 
     #Creating the contrast matrix
-    constrast.matrix <- get.contrast.matrix(matrix)
+    if(missing(contrast.matrix)) {
+        constrast.matrix <- get.contrast.matrix(matrix)
+    }
 
     #Creating the phyDat object
-    matrix_phyDat <- phangorn::phyDat(data, type = "USER", contrast = constrast.matrix)
+    matrix_phyDat <- phangorn::phyDat(data = matrix, type = "USER", contrast = constrast.matrix)
 
+    #Calcualte the first tree
+    if(class(first.tree) == "function") {
+        #Calculate the first tree from the phyDat
+        first_tree <- first.tree(matrix_phyDat)
+    } else {
+        #Calculate the operation on the phyDat
+        first_tree <- first.tree[[1]](matrix_phyDat)
+        for(operations in 2:length(first.tree)) {
+            #Transform the first_tree using the other operations
+            first_tree <- first.tree[[operations]](first_tree)
+        }
+    }
+
+    #Get the quick and dirty most parsimonious tree
+    if(use.optim.parsimony == TRUE) {
+        cat("Most parsimonious tree search:\n")
+        MP_tree <- parsimony.algorithm(tree = first_tree, data = matrix_phyDat, method = method, ...)
+        #MP_tree <- parsimony.algorithm(tree = first_tree, data = matrix_phyDat, method = method) ; warning("DEBUG")
+    } else {
+        MP_tree <- parsimony.algorithm(tree = first_tree, data = matrix_phyDat)
+    }
+
+    #Get the parsimony score
+    parsimony_score <- phangorn::parsimony(MP_tree, matrix_phyDat)
+
+    #Get the CI
+    consistency_index <- phangorn::CI(MP_tree, matrix_phyDat)
+
+    #Get the retention Index
+    retention_index <- phangorn::RI(MP_tree, matrix_phyDat)    
+
+    if(!missing(orig.tree)) {
+        #Get the distance between the trees
+        tree_distance <- phangorn::RF.dist(MP_tree, unroot(orig.tree))
+
+        #Get the data out vectors (with distance)
+        data_out <- c(parsimony_score, consistency_index, retention_index, tree_distance)
+        out_names <- c("Maximum parsimony", "Consistency index", "Retention index", "Robinson-Foulds distance")
+
+    } else {
+
+        #Get the data out vectors (without distance)
+        data_out <- c(parsimony_score, consistency_index, retention_index)
+        out_names <- c("Maximum parsimony", "Consistency index", "Retention index")
+    }
+
+    return(matrix(data = data_out, ncol = 1, dimnames = list(out_names, c(""))))
 }
-
-
-
-
-# contrast.matrix <- matrix(data=c(
-#   1,0,0, # 0 = {0}
-#   0,1,0, # 1 = {1}
-#   0,0,1, # - = {-}
-#   1,1,0, # A = {01}
-#   1,1,0, # + = {01}
-#   1,1,1  # ? = {01-}
-# ), ncol=3, byrow=TRUE)
-
-# # Dimnames must be the list of tokens (in the matrix) and the list of character states
-# dimnames(contrast.matrix) <- list(
-#   c(0, 1, '-', 'A', '+', '?'), # A list of the tokens corresponding to each rows in the contrast matrix
-#   c(0, 1, '-') # A list of the character-states corresponding to the columns in the contrast matrix
-# )
-
-# # Transforming my.data from list to matrix
-# my.data <- matrix(data = unlist(my.data) , nrow= length(my.data), byrow=TRUE, dimnames=list(names(my.data)))
-
-# # Applying the contrast matrix to the matrix (through phangorn::phyDat)
-# my.phyDat <- phyDat(my.data, type='USER', contrast=contrast.matrix)
-
-# # phangorn::parsimony
-
-# dm = phangorn::dist.hamming(Laurasiatherian)
-# tree = phangorn::NJ(dm)
-
-# phangorn::optim.parsimony(tree, data, method="fitch", cost=NULL, trace=1, rearrangements="SPR", ...)
-# phangorn::CI(tree, data, cost = NULL, sitewise=FALSE)
-# phangorn::RI(tree, data, cost = NULL, sitewise=FALSE)

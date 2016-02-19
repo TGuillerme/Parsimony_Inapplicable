@@ -5,8 +5,10 @@ context("make.matrix")
 #Testing sample.distribution
 test_that("sample.distribution works", {
     #errors
-    expect_error(
-        sample.distribution("a", c(runif,1,2))
+    expect_warning(
+        expect_error(
+            sample.distribution("a", c(runif,1,2))
+            )
         )
     expect_error(
         sample.distribution(1, "c(runif,1,2)")
@@ -41,8 +43,10 @@ test_that("sample.distribution works", {
 #Testing proportional.distribution
 test_that("proportional.distribution works", {
     #errors
-    expect_error(
-        proportional.distribution("a", runif)
+    expect_warning(
+        expect_error(
+            proportional.distribution("a", runif)
+            )
         )
     expect_error(
         proportional.distribution(4, "runif")

@@ -4,11 +4,14 @@
 \alias{check.matrix}
 \title{Check morphological matrix consistency.}
 \usage{
-check.matrix(matrix, parismony = "fitch", first.tree = c(dist.hamming, NJ),
-  orig.tree, distance = RF.dist, ...)
+check.matrix(matrix, parsimony = "fitch",
+  first.tree = c(phangorn::dist.hamming, phangorn::NJ), orig.tree,
+  distance = phangorn::RF.dist, ..., contrast.matrix)
 }
 \arguments{
 \item{matrix}{A discrete morphological matrix.}
+
+\item{parsimony}{Either the parsimony algorithm to be passed to \code{\link[phangorn]{optim.parsimony}} or a parsimony function that can take a \code{\link[phangorn]{phyDat}} object as an input.}
 
 \item{first.tree}{A list of functions to generate the first parsimonious tree (default = \code{c(\link[phangorn]{dist.hamming}, \link[phangorn]{NJ})}; see details).}
 
@@ -17,8 +20,6 @@ check.matrix(matrix, parismony = "fitch", first.tree = c(dist.hamming, NJ),
 \item{distance}{Optional, if orig.tree is provide, the function to use for measuring distance between the trees (default = \code{link[phangorn]{RF.dist}}).}
 
 \item{...}{Any additional arguments.}
-
-\item{parsimony}{Either the parsimony algorithm to be passed to \code{\link[phangorn]{optim.parsimony}} or a parsimony function that can take a \code{\link[phangorn]{phyDat}} object as an input.}
 
 \item{contrast.matrix}{An optional contrast matrix. By default, the function recognises any character states token as different apart from \code{?} that is treated as a joker character.}
 }
@@ -33,7 +34,7 @@ For example the default \code{c(\link[phangorn]{dist.hamming}, \link[phangorn]{N
 }
 }
 \description{
-Performs a quick and dirty checking of the phylogenetic signal in a morphological matrix using parismony.
+Performs a quick and dirty checking of the phylogenetic signal in a morphological matrix using parsimony.
 }
 \examples{
 ## Generating a random tree

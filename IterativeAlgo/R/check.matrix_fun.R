@@ -17,7 +17,7 @@ get.contrast.matrix <- function(matrix) {
         contrast_matrix <- rbind(contrast_matrix, joker_matrix)
     } else {
         # Create a simple square matrix with 0s...
-        contrast_matrix <- matrix(data = rep(0, length(states)*length(states)), ncol = length(states), dimnames = list(as.character(states_num), as.character(states_num)))
+        contrast_matrix <- matrix(data = rep(0, length(states)*length(states)), ncol = length(states), dimnames = list(as.character(states), as.character(states)))
         # Set the diagonal to 0 
         diag(contrast_matrix) <- 1
     }
