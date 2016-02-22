@@ -12,3 +12,6 @@
 # Inapplicable package
 
 inapplicable/*
+
+# Testings
+IterativeAlgo/Testings_parameters/*
