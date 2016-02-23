@@ -73,9 +73,5 @@ is.invariant <- function(character) {
     }
 }
 
-#Generating inapplicable characters
-select.clade <- function(tree) {
-    return(extract.clade(tree, node = sample(1:Nnode(tree), 1)+Ntip(tree))$tip.label)
-}
 
 # 

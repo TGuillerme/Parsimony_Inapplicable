@@ -57,7 +57,7 @@ tree <- rcoal(10)
 my_rates = c(rgamma, 1, 1) # A gamma rate distribution with of shape alpha = 0.5
 my_substitutions = c(runif, 2, 2) # A fixed substitution rate of 2 (T/T ratio in HKY)
 
-## A pure Mk matrix (10*50)
+## Mk matrix (10*50)
 matrixMk <- make.matrix(tree, characters = 50, model = "ER", rates = my_rates)
 ## HKY binary (10*50)
 matrixHKY <- make.matrix(tree, characters = 50, model="HKY", rates = my_rates, substitution = my_substitutiom)

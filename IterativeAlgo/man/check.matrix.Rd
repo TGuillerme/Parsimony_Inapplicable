@@ -4,18 +4,18 @@
 \alias{check.matrix}
 \title{Check morphological matrix consistency.}
 \usage{
-check.matrix(matrix, parsimony = "fitch",
-  first.tree = c(phangorn::dist.hamming, phangorn::NJ), orig.tree,
+check.matrix(matrix, orig.tree, parsimony = "fitch",
+  first.tree = c(phangorn::dist.hamming, phangorn::NJ),
   distance = phangorn::RF.dist, ..., contrast.matrix)
 }
 \arguments{
 \item{matrix}{A discrete morphological matrix.}
 
+\item{orig.tree}{Optional, the input tree to measure the distance between the parsimony and the original tree.}
+
 \item{parsimony}{Either the parsimony algorithm to be passed to \code{\link[phangorn]{optim.parsimony}} or a parsimony function that can take a \code{\link[phangorn]{phyDat}} object as an input.}
 
 \item{first.tree}{A list of functions to generate the first parsimonious tree (default = \code{c(\link[phangorn]{dist.hamming}, \link[phangorn]{NJ})}; see details).}
-
-\item{orig.tree}{Optional, the input tree to measure the distance between the parsimony and the original tree.}
 
 \item{distance}{Optional, if orig.tree is provide, the function to use for measuring distance between the trees (default = \code{link[phangorn]{RF.dist}}).}
 

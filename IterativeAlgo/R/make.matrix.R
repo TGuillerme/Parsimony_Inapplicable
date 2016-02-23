@@ -44,7 +44,7 @@
 #' my_rates = c(rgamma, 1, 1) # A gamma rate distribution with of shape alpha = 0.5
 #' my_substitutions = c(runif, 2, 2) # A fixed substitution rate of 2 (T/T ratio in HKY)
 #'
-#' ## A pure Mk matrix (10*50)
+#' ## Mk matrix (10*50)
 #' matrixMk <- make.matrix(tree, characters = 50, model = "ER", rates = my_rates)
 #' ## HKY binary (10*50)
 #' matrixHKY <- make.matrix(tree, characters = 50, model="HKY", rates = my_rates, substitution = my_substitutiom)
@@ -83,7 +83,7 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
             model <- rTraitDisc.mk
             #Warning on the substitutions:
             substitution <- c(runif, 1, 1)
-            message("Substitution parameter is ignored for the ER model.")
+            #message("Substitution parameter is ignored for the ER model.")
         }
         if(class(model) != "function" && model == "HKY") model <- gen.seq.HKY.binary
 
@@ -126,23 +126,6 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
     #verbose
     check.class(verbose, "logical")
 
-    # #inapplicables
-    # if(!missing(inapplicables)) {
-    #     check.class(inapplicables, "character")
-    #     inap.source_options <- c("character", "clade")
-    #     if(all(is.na(match(unique(inapplicables), inap.source_options)))) {
-    #         stop("inapplicables argument must be a vector containing at least one of the following: ", paste(inap.source_options, collapse=", "), sep="")
-    #     }        
-    #     if(inapplicables > characters/2) {
-    #         stop("Only half the number of characters can be inapplicables")
-    #     }
-    # }
-
-    # #output
-    # if(!missing(output)) {
-    #     check.class(output, "character")
-    #     check.length(output, 1, " must be a single string of characters.")
-    # }
 
     #GENERATING THE CHARACTERS
     #Isolating the arguments
@@ -173,48 +156,5 @@ make.matrix <- function(tree, characters, states = 1, model = "ER", rates, subst
     return(matrix)
     
 
-    #ADDING INAPPLICABLE CHARACTERS
-
-
-    # #Add inapplicable characters (from character)
-    # if(!missing(inapplicables) & inap.source == "character") {
-    #     #Select all the pairs of characters
-    #     characters1 <- seq(from=1, to=characters, by=2)
-    #     characters2 <- seq(from=2, to=characters, by=2)
-
-    #     #Take a percentage of the shortest vector and use them for "inapplicability"
-    #     if(length(characters2) < length(characters1)) {
-    #         inapplicators <- characters2[1:inapplicables]
-    #     } else {
-    #         inapplicators <- characters1[1:inapplicables]
-    #     }
-
-    #     #making characters inapplicable
-    #     for(inap in 1:inapplicables) {
-    #         matrix[which(matrix[,inapplicators[inap]] == "0"), inapplicators[inap]+1] <- "-"
-    #     }
-    # }
-
-    # #Add inapplicable characters (from clades)
-    # if(!missing(inapplicables) & inap.source == "clade") {
-    #     #Select some clades
-    #     clades <- replicate(inapplicables, select.clade(tree), simplify = FALSE)
-    #     #Make them inapplicable in the matrix
-    #     for(inap in 1:inapplicables) {
-    #         matrix[clades[[inap]], inap] <- "-"
-    #     }
-    # }
-
-
-    # #OUTPUTING THE FILE
-    # if(!missing(output)) {
-    #     #Modifying write.nexus.data entry
-    #     write.nexus.data.tmp <- write.nexus.data
-    #     body(write.nexus.data.tmp)[[2]] <- quote(format <- match.arg(toupper(format), c("DNA", "PROTEIN", "STANDARD")))
-    #     #Saving the file as a nexus
-    #     write.nexus.data.tmp(matrix, file=paste(output, ".nex", sep=""), format = "standard")
-    #     #Verbose
-    #     cat(paste("Matrix saved as ", output, ".nex in current directory.\n", sep=""))
-    # }
     
 }
