@@ -60,7 +60,7 @@ my_substitutions = c(runif, 2, 2) # A fixed substitution rate of 2 (T/T ratio in
 ## Mk matrix (10*50)
 matrixMk <- make.matrix(tree, characters = 50, model = "ER", rates = my_rates)
 ## HKY binary (10*50)
-matrixHKY <- make.matrix(tree, characters = 50, model="HKY", rates = my_rates, substitution = my_substitutiom)
+matrixHKY <- make.matrix(tree, characters = 50, model="HKY", rates = my_rates, substitution = my_substitutions)
 }
 \author{
 Thomas Guillerme
