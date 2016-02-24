@@ -11,5 +11,6 @@
 #' @import ape
 #' @importFrom phyclust gen.seq.HKY
 #' @importFrom phangorn phyDat parsimony dist.hamming NJ optim.parsimony CI RI RF.dist
+#' @importFrom diversitree tree.bd
 
 NULL
