@@ -7,7 +7,7 @@
 #' @param model Either an implemented (\code{"ER"} or \code{"HKY"}; see details) or user defined model for generating one discrete morphological characters with at least the following arguments: \code{tree}, \code{states}, \code{rates}, \code{substitution}.
 #' @param states A string of probabilities for the number of states for each characters (\code{default = 1}; i.e. 100\% binary state characters; see details).
 #' @param rates A function an it's parameters for the rates distribution (see details).
-#' @param substitution A function an it's parameters for the substitutions distribution (see details).
+#' @param substitution A function an it's parameters for the substitutions distribution (see details; \code{default = c(runif, 2, 2)}).
 ##' @param ... Any optional arguments to be passed to the model argument.
 #' @param invariant Whether to allow any invariant sites.
 ##' @param inapplicable Optional, a vector of characters inapplicability source (either \code{"character"} or \code{"clade"}; see details). The length of this vector must be at maximum half the total number of characters.
@@ -52,7 +52,7 @@
 #' @export
 
 
-make.matrix <- function(tree, characters, states = 1, model = "ER", rates, substitution, invariant = FALSE, verbose = FALSE) { #...
+make.matrix <- function(tree, characters, states = 1, model = "ER", rates, substitution = c(runif, 2, 2), invariant = FALSE, verbose = FALSE) { #...
 
     #SANITIZNG
     #tree

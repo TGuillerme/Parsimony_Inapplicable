@@ -1,0 +1,173 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+
+
+\newcommand{\R}{\texttt{R} }
+
+\begin{document}
+\title{Generating discrete morphological matrices with \R}
+
+\author{Thomas Guillerme \\ t.guillerme@imperial.ac.uk}
+
+
+\maketitle
+
+This is just an informal note on what I've been working on on the Inapplicable data project and is now properly running.
+Basically, prior to testing any algorithms dealing with inapplicable characters as we discussed last time, I spend some time developing some tools that you might find handy.
+The following functions are stored in a \R ``package'' clumsily called \texttt{IterativeAlgo} (that ought to be changed in the near future).
+They allow to generate some simulated yet realistic discrete morphological matrices and introduce some inapplicable characters.
+These matrices just need a tree as an input and allow a certain number of parameters to be set by the user.
+
+\section{Before starting}
+
+The ``package'' is stored on my github page:
+
+<<installation, eval=FALSE>>=
+if(!require(devtools)) install.packages("devtools")
+install_github("TGuillerme/Parsimony_Inapplicable/IterativeAlgo")
+library(IterativeAlgo)
+@
+
+A couple of packages are needed for running the functions and should install automatically.
+If not, they can be installed from here
+<<installation2, eval=FALSE>>=
+if(!require(ape)) install.packages("ape")
+if(!require(ape)) install.packages("phangorn")
+if(!require(ape)) install.packages("phyclust")
+if(!require(ape)) install.packages("diversitree")
+@
+
+\section{Quick go through}
+
+This is a quick example on how it works
+<<quickGo>>=
+library(IterativeAlgo)
+
+## Setting the starting tree with 15 taxa as a random coalescent tree
+my_tree <- rcoal(15)
+
+## Generating a matrix with 100 characters (85% binary and 15% three states) and
+## an equal rates model with a gamma rates distribution (0.5, 1) with no
+## invariant characters.
+my_matrix <- make.matrix(tree = my_tree, characters = 100, states = c(0.85,
+    0.15), rates = c(rgamma, 0.5, 1), invariant = FALSE)
+
+## Checking the matrix properties with a quick Maximum Parsimony tree search
+check.matrix(my_matrix, my_tree)
+
+## Adding 10 inapplicable characters (5 from characters and 5 from phylogeny)
+matrix_inap <- apply.inapplicables(my_matrix, inapplicables = c(rep("character",
+    5), rep("clade", 5)), my_tree, invariant = FALSE)
+@
+
+It is then possible to save this matrix in classic \texttt{nexus} format:
+
+<<save, eval=FALSE>>=
+write.nexus.data(matrix_inap, file = "test.nex")
+@
+
+\section{Details}
+Details can be found for the three functions in their manuals:
+
+<<man, eval=FALSE>>=
+?make.matrix
+?check.matrix
+?apply.inapplicables
+@
+
+Basically, \texttt{make.matrix} is really flexible and intakes a lot of different arguments to allow to simulate realistic matrix.
+It has two implemented models: \texttt{"ER"} for Equal Rates (M\textit{k} model) or the \texttt{"HKY"} one which is the molecular HKY model but transforms pyrines in 0's and purimidines in 1's.
+It can also intake some specific distribution for the rates or the substitutions, allowing to modify these basic models.
+
+The \texttt{check.matrix} runs a quick MP tree using the \texttt{phangorn} parsimony algorithm.
+It quickly calculates the parsimony score, the consistency and retention indices and, if a tree is provided (e.g. the tree used to generate the matrix) it calculates the Robinson-Foulds distance between the MP tree and the provided tree.
+
+Finally, the interesting bit, the \texttt{apply.inapplicables} function transforms some of the characters states in the matrix into inapplicable tokens.
+There are two way the algorithm replaces the states by a inapplicable token:
+\begin{enumerate}
+\item By selecting a ``pattern character'' in the matrix and linking it to a ``target character'' next to it.
+The taxa with a randomly chosen state in the ``pattern character'' (e.g. 0) will then have an inapplicable character token for the ``target character''.
+This is done by using the \texttt{"character"} argument and is meant to simulate data inapplicability that originates from the coder (i.e. I first coded the character ``tail'' - the ``pattern character'' - and then I coded ``tail color'' - the ``target character'').
+\item By selecting a random clade or it's associated grade (i.e. everything that's not in the clade) and attributing inapplicable tokens for a given character to all the taxa present in that clade/grade.
+This is done by using the \texttt{"clade"} argument and is meant to simulate data inapplicability that originates from the phylogeny (i.e. the deer's antlers that is present only in that clade).
+\end{enumerate}
+
+I was thinking it could be interesting to play with these two different character inapplicability ``origin'' and see if that influences anything.
+
+\section{Good parameters for a good matrix}
+
+I was testing the effect of different parameters on the ability to generate a ``realistic'' matrix (meaning not to different from the input tree with a consistency and retention index close to what's in the literature).
+The matrix seems the most ``realistic'' with a starting coalescent tree, equal rates model with 0.85 binary characters and 0.15 three states characters (by the way, these proportion are extracted from observed data my Total Evidence paper \cite{GuillermeCooper}), a gamma distribution with a shape parameter ($\alpha$) of 0.5 and no scaling ($\beta$ = 1).
+
+Something like that should give a decent matrix:
+<<parametersbest>>=
+## tree
+my_tree <- rcoal(15)
+## matrix
+morpho_mat <- make.matrix(my_tree, characters = 100, model = "ER",
+    rates = c(rgamma, 0.5, 1), invariant = TRUE)
+## 
+check.matrix(morpho_mat, my_tree)
+@
+
+\subsection{Testing the effect of the input tree}
+
+\begin{figure}[!htbp]
+\centering
+   \includegraphics[width=1\textwidth]{Tree_effect.pdf}
+\caption{Effect of a yule, coalescent or birth-death (with random $\lambda$ and $\mu$) starting tree.
+The other parameters are fixed to be: \texttt{rates = c(rgamma, 0.5, 1)} and \texttt{model = "ER"}.
+Simulations where repeated 1000 times per tree type.}
+\label{Tree_effect}
+\end{figure}
+
+\subsection{Testing the effect of the model}
+
+\begin{figure}[!htbp]
+\centering
+   \includegraphics[width=1\textwidth]{Model_effect.pdf}
+\caption{Effect of a Equal Rates (Mk), HKY (binary) or Mk with multiple states models.
+The other parameters are fixed to be: \texttt{rates = c(rgamma, 0.5, 1)} and \texttt{tree = coalescent}.
+Simulations where repeated 1000 times per model type.}
+\label{Model_effect}
+\end{figure}
+
+\subsection{Testing the effect of the rates distribution}
+
+\begin{figure}[!htbp]
+\centering
+   \includegraphics[width=1\textwidth]{Rate_distribution_effect.pdf}
+\caption{Effect of a Gamma, Log-normal or Uniform rates distribution.
+The other parameters are fixed to be: \texttt{model = "ER"} and \texttt{tree = coalescent}.
+Simulations where repeated 1000 times per distribution type.}
+\label{Rate_distribution_effect}
+\end{figure}
+
+\subsection{Testing the effect of the rates distribution shape}
+
+\begin{figure}[!htbp]
+\centering
+   \includegraphics[width=1\textwidth]{Gamma_effect.pdf}
+\caption{Effect of a Gamma distribution shape of $\alpha$=0.5 and $\beta$=1; $\alpha$=1 and $\beta$=1; $\alpha$=0.5 and $\beta$=0.1; and $\alpha$=1 and $\beta$=0.1.
+The other parameters are fixed to be: \texttt{model = "ER"} and \texttt{tree = coalescent}.
+Simulations where repeated 1000 times per shape type.}
+\label{Gamma_effect}
+\end{figure}
+
+\bibliographystyle{vancouver}
+\bibliography{References}
+
+
+\end{document}

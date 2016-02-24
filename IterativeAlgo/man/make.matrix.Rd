@@ -4,8 +4,8 @@
 \alias{make.matrix}
 \title{Generates a morphological matrix.}
 \usage{
-make.matrix(tree, characters, states = 1, model = "ER", rates, substitution,
-  invariant = FALSE, verbose = FALSE)
+make.matrix(tree, characters, states = 1, model = "ER", rates,
+  substitution = c(runif, 2, 2), invariant = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{tree}{A phylogenetic tree to use for generating the characters.}
@@ -18,7 +18,7 @@ make.matrix(tree, characters, states = 1, model = "ER", rates, substitution,
 
 \item{rates}{A function an it's parameters for the rates distribution (see details).}
 
-\item{substitution}{A function an it's parameters for the substitutions distribution (see details).}
+\item{substitution}{A function an it's parameters for the substitutions distribution (see details; \code{default = c(runif, 2, 2)}).}
 
 \item{invariant}{Whether to allow any invariant sites.}
 
