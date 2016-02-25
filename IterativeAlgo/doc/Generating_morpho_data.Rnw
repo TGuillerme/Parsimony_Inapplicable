@@ -53,7 +53,7 @@ if(!require(ape)) install.packages("diversitree")
 
 This is a quick example on how it works
 <<quickGo>>=
-library(IterativeAlgo)
+suppressWarnings(library(IterativeAlgo))
 
 ## Setting the starting tree with 15 taxa as a random coalescent tree
 my_tree <- rcoal(15)
@@ -122,6 +122,7 @@ morpho_mat <- make.matrix(my_tree, characters = 100, model = "ER",
 check.matrix(morpho_mat, my_tree)
 @
 
+\newpage
 \subsection{Testing the effect of the input tree}
 
 \begin{figure}[!htbp]
@@ -133,6 +134,7 @@ Simulations where repeated 1000 times per tree type.}
 \label{Tree_effect}
 \end{figure}
 
+\newpage
 \subsection{Testing the effect of the model}
 
 \begin{figure}[!htbp]
@@ -144,6 +146,7 @@ Simulations where repeated 1000 times per model type.}
 \label{Model_effect}
 \end{figure}
 
+\newpage
 \subsection{Testing the effect of the rates distribution}
 
 \begin{figure}[!htbp]
@@ -155,6 +158,7 @@ Simulations where repeated 1000 times per distribution type.}
 \label{Rate_distribution_effect}
 \end{figure}
 
+\newpage
 \subsection{Testing the effect of the rates distribution shape}
 
 \begin{figure}[!htbp]

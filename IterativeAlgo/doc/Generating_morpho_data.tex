@@ -112,11 +112,8 @@ This is a quick example on how it works
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{library}\hlstd{(IterativeAlgo)}
-\end{alltt}
+\hlkwd{suppressWarnings}\hlstd{(}\hlkwd{library}\hlstd{(IterativeAlgo))}
 
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in .doLoadActions(where, attach): trying to execute load actions without 'methods' package}}\begin{alltt}
 \hlcom{## Setting the starting tree with 15 taxa as a random coalescent tree}
 \hlstd{my_tree} \hlkwb{<-} \hlkwd{rcoal}\hlstd{(}\hlnum{15}\hlstd{)}
 
@@ -131,19 +128,21 @@ This is a quick example on how it works
 \end{alltt}
 \begin{verbatim}
 ## Most parsimonious tree search:
-## Final p-score 155 after  1 nni operations
+## Final p-score 172 after  0 nni operations
 ##                                     
-## Maximum parsimony        155.0000000
-## Consistency index          0.7032258
-## Retention index            0.8601824
-## Robinson-Foulds distance   6.0000000
+## Maximum parsimony        172.0000000
+## Consistency index          0.6395349
+## Retention index            0.7987013
+## Robinson-Foulds distance   4.0000000
 \end{verbatim}
 \begin{alltt}
 \hlcom{## Adding 10 inapplicable characters (5 from characters and 5 from phylogeny)}
 \hlstd{matrix_inap} \hlkwb{<-} \hlkwd{apply.inapplicables}\hlstd{(my_matrix,} \hlkwc{inapplicables} \hlstd{=} \hlkwd{c}\hlstd{(}\hlkwd{rep}\hlstd{(}\hlstr{"character"}\hlstd{,}
     \hlnum{5}\hlstd{),} \hlkwd{rep}\hlstd{(}\hlstr{"clade"}\hlstd{,} \hlnum{5}\hlstd{)), my_tree,} \hlkwc{invariant} \hlstd{=} \hlnum{FALSE}\hlstd{)}
 \end{alltt}
-\end{kframe}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# 3 characters are now invariant due inapplicable data.}}\end{kframe}
 \end{knitrout}
 
 It is then possible to save this matrix in classic \texttt{nexus} format:
@@ -207,16 +206,17 @@ Something like that should give a decent matrix:
 \end{alltt}
 \begin{verbatim}
 ## Most parsimonious tree search:
-## Final p-score 75 after  0 nni operations
+## Final p-score 90 after  1 nni operations
 ##                                    
-## Maximum parsimony        75.0000000
-## Consistency index         0.6666667
-## Retention index           0.8717949
-## Robinson-Foulds distance  4.0000000
+## Maximum parsimony        90.0000000
+## Consistency index         0.6000000
+## Retention index           0.7352941
+## Robinson-Foulds distance 10.0000000
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
 
+\newpage
 \subsection{Testing the effect of the input tree}
 
 \begin{figure}[!htbp]
@@ -228,6 +228,7 @@ Simulations where repeated 1000 times per tree type.}
 \label{Tree_effect}
 \end{figure}
 
+\newpage
 \subsection{Testing the effect of the model}
 
 \begin{figure}[!htbp]
@@ -239,6 +240,7 @@ Simulations where repeated 1000 times per model type.}
 \label{Model_effect}
 \end{figure}
 
+\newpage
 \subsection{Testing the effect of the rates distribution}
 
 \begin{figure}[!htbp]
@@ -250,6 +252,7 @@ Simulations where repeated 1000 times per distribution type.}
 \label{Rate_distribution_effect}
 \end{figure}
 
+\newpage
 \subsection{Testing the effect of the rates distribution shape}
 
 \begin{figure}[!htbp]
