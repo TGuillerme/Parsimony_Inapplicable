@@ -2,6 +2,7 @@
 
 export(apply.inapplicables)
 export(check.matrix)
+export(export.tnt)
 export(get.contrast.matrix)
 export(make.matrix)
 export(rtree.bd)
