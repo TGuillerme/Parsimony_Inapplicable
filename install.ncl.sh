@@ -18,8 +18,3 @@ sudo make install
 #cd $HOME/ncl-2.1.18
 #./configure --prefix=$HOME/nclib
 #make install
-
-# Cleaning
-cd ..
-rm -R ncl-2.1.18/
-rm ncl-2.1.18.tar.gz
