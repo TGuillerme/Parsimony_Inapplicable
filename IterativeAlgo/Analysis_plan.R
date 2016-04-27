@@ -4,8 +4,8 @@ document()
 test()
 library(IterativeAlgo)
 library(phangorn)
+library(diversitree)
 #Analysis plan
-
 
 # Step 1: get a matrix
 #matrix <- ReadMorphNexus("empirical.nex")
@@ -15,6 +15,61 @@ library(phangorn)
 # birth <- function(t) 1/(1 + exp(0.2*t - 1)) #TG: define the birth process distribution (here logistic)
 # death <- 0.07 #TG: define the death process distribution
 # tree <- rbdtree(b, mu, Tmax = 2) # Prefer diversitree::tree.bd
+
+
+rand.birth.death <- function() {
+    lambda <- runif(1)
+    mu <- runif(1, 0, lambda)
+    return(cbind(lambda, mu))
+}
+
+
+tree.bd_pars <- NULL
+tree.bd_CI <- NULL
+tree.bd_RI <- NULL
+tree.bd_RF <- NULL
+for(i in 1:100) {
+    # Proper birth death tree
+    tree <- tree.bd(rand.birth.death(), max.taxa = 15) # Make sure is not null!
+    while(is.null(tree)) {
+        tree <- tree.bd(rand.birth.death(), max.taxa = 15) # Make sure is not null!
+    }
+
+    # setting up the parameters
+    my_rates = c(rgamma, 1, 0.1) # A gamma rate distribution with of shape alpha = 5
+    my_substitutions = c(runif, 2, 2) # A fixed substitution rate of 2 (T/T ratio in HKY)
+
+    # A pure Mk matrix (10*50)
+    matrixMk <- make.matrix(tree, characters = 150, model = "ER", states = c(0.85, 0.15), rates = my_rates, substitution = my_substitutions, verbose = TRUE)
+    tmp <- check.matrix(matrixMk, tree)
+    tree.bd_pars[i] <- tmp[1,1]
+    tree.bd_CI[i] <- tmp[2,1]
+    tree.bd_RI[i] <- tmp[3,1]
+    tree.bd_RF[i] <- tmp[4,1]
+}
+
+
+rcoal_pars <- NULL
+rcoal_CI <- NULL
+rcoal_RI <- NULL
+rcoal_RF <- NULL
+for(i in 1:100) {
+    # Proper birth death tree
+    tree <- rcoal(15)
+
+    # setting up the parameters
+    my_rates = c(rgamma, 1, 0.1) # A gamma rate distribution with of shape alpha = 5
+    my_substitutions = c(runif, 2, 2) # A fixed substitution rate of 2 (T/T ratio in HKY)
+
+    # A pure Mk matrix (10*50)
+    matrixMk <- make.matrix(tree, characters = 150, model = "ER", states = c(0.85, 0.15), rates = my_rates, substitution = my_substitutions, verbose = TRUE)
+    tmp <- check.matrix(matrixMk, tree)
+    rcoal_pars[i] <- tmp[1,1]
+    rcoal_CI[i] <- tmp[2,1]
+    rcoal_RI[i] <- tmp[3,1]
+    rcoal_RF[i] <- tmp[4,1]
+}
+
 
 
 
@@ -49,9 +104,6 @@ matrices_HKY <- lapply(trees, make.matrix, characters = 100, model = "HKY", rate
 
 check_Mk <- mapply(check.matrix, matrices_Mk, trees)
 check_HKY <- mapply(check.matrix, matrices_HKY, trees)
-
-
-
 
 
 ylim_pars <- c(min(c(check_Mk[1,], check_HKY[1,])), max(c(check_Mk[1,], check_HKY[1,])))

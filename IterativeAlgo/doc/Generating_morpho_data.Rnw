@@ -59,7 +59,7 @@ suppressWarnings(library(IterativeAlgo))
 my_tree <- rcoal(15)
 
 ## Generating a matrix with 100 characters (85% binary and 15% three states) and
-## an equal rates model with a gamma rates distribution (0.5, 1) with no
+## an equal rates model with a gamma rates distribution (0.5, 1) with no 
 ## invariant characters.
 my_matrix <- make.matrix(tree = my_tree, characters = 100, states = c(0.85,
     0.15), rates = c(rgamma, 0.5, 1), invariant = FALSE)

@@ -13,13 +13,16 @@ export.tnt(matrix, chain.name, inapplicable = TRUE, run.n.read = FALSE)
 
 \item{inapplicable}{\code{logical} whether to treat inapplicable as \code{-} (\code{TRUE}) or as \code{?} (\code{FALSE}).}
 
-\item{run.n.read}{\code{logical} whether to run the matrix and read in the results (\code{default = FALSE}).}
+\item{run.n.read}{\code{logical} whether to run the matrix and read in the results (\code{default = FALSE}). For UNIX machines only: see details.}
 }
 \value{
 Generates a tnt file out of the R environment. If \code{run.n.read = TRUE} also reads in the resulting trees and parsimony score.
 }
 \description{
 Generates a tnt file that contains the matrix and the tnt instructions for running a tree.
+}
+\details{
+The \code{run.n.read} arguments works by calling \code{system("tnt.command < chain.name.tnt")}. Make sure the \code{tnt.command} file is in the the \code{usr/bin/} or \code{usr/local/bin/} directory.
 }
 \examples{
 ## A random tree with 10 tips
@@ -32,7 +35,7 @@ my_substitutions = c(runif, 2, 2) # A fixed substitution rate of 2 (T/T ratio in
 matrixMk <- make.matrix(tree, characters = 50, model = "ER", rates = my_rates)
 
 ## Exporting to tnt
-export.tnt(matrix, chain.name = "dummy")
+export.tnt(matrixMk, chain.name = "dummy")
 
 ## Tidying
 remove.files("dummy.tnt")

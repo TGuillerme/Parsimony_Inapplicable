@@ -91,6 +91,8 @@ export.tnt <- function(matrix, chain.name, inapplicable = TRUE, run.n.read = FAL
     if(run.n.read == TRUE) {
         # Running the tnt file
         system(paste("tnt.command < ", paste(chain.name, ".tnt", sep = ""), sep = ""))
+        # Trees
+        trees <- read.nexus(paste(chain.name, ".tre", sep = ""))
     }
 
     
