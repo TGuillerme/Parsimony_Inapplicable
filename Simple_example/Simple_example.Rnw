@@ -36,17 +36,17 @@ We are also going to need the \texttt{IterativeAlgo} ``package'' that contains s
 <<installation, eval=FALSE>>=
 if(!require(devtools)) install.packages("devtools")
 install_github("TGuillerme/Parsimony_Inapplicable/IterativeAlgo")
+install_github("ms609/inapplicable")
 @
 
 These are the required packages in \texttt{R}.
 
 <<installation2, eval=TRUE>>=
-library(IterativeAlgo)
+library(IterativeAlgo) ; library(inapplicable)
 if(!require(ape)) install.packages("ape")
 if(!require(phangorn)) install.packages("phangorn")
 if(!require(phyclust)) install.packages("phyclust")
 if(!require(diversitree)) install.packages("diversitree")
-if(!require(inapplicable)) install.packages("inapplicable")
 
 @
 

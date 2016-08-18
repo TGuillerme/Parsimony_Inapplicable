@@ -1,0 +1,229 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+
+
+\newcommand{\R}{\texttt{R} }
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\title{Testing a simple example for the inapplicability problem}
+
+\author{Thomas Guillerme \\ t.guillerme@imperial.ac.uk}
+
+
+\maketitle
+
+This vignette aims to test which algorithms will pick up the signal of a really simple matrix with a clear signal.
+We are going to test a simple 12 taxa matrix with a minimum parsimony of 18 steps and a ``stairs'' topology (i.e. (t1, (t2, (t3, etc.))); ).
+
+We are going to test with \texttt{tnt} \texttt{inapplicable R} package and \texttt{phangorn R} package.
+
+\section{Before starting}
+
+We are also going to need the \texttt{IterativeAlgo} ``package'' that contains some utilities functions.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwa{if}\hlstd{(}\hlopt{!}\hlkwd{require}\hlstd{(devtools))} \hlkwd{install.packages}\hlstd{(}\hlstr{"devtools"}\hlstd{)}
+\hlkwd{install_github}\hlstd{(}\hlstr{"TGuillerme/Parsimony_Inapplicable/IterativeAlgo"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+These are the required packages in \texttt{R}.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(IterativeAlgo)}
+\end{alltt}
+
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning in .doLoadActions(where, attach): trying to execute load actions without 'methods' package}}\begin{alltt}
+\hlkwa{if}\hlstd{(}\hlopt{!}\hlkwd{require}\hlstd{(ape))} \hlkwd{install.packages}\hlstd{(}\hlstr{"ape"}\hlstd{)}
+\hlkwa{if}\hlstd{(}\hlopt{!}\hlkwd{require}\hlstd{(phangorn))} \hlkwd{install.packages}\hlstd{(}\hlstr{"phangorn"}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Loading required package: phangorn}}\begin{alltt}
+\hlkwa{if}\hlstd{(}\hlopt{!}\hlkwd{require}\hlstd{(phyclust))} \hlkwd{install.packages}\hlstd{(}\hlstr{"phyclust"}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Loading required package: phyclust}}\begin{alltt}
+\hlkwa{if}\hlstd{(}\hlopt{!}\hlkwd{require}\hlstd{(diversitree))} \hlkwd{install.packages}\hlstd{(}\hlstr{"diversitree"}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Loading required package: diversitree}}\begin{alltt}
+\hlkwa{if}\hlstd{(}\hlopt{!}\hlkwd{require}\hlstd{(inapplicable))} \hlkwd{install.packages}\hlstd{(}\hlstr{"inapplicable"}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Loading required package: inapplicable}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Loading required package: parallel}}\end{kframe}
+\end{knitrout}
+
+\section{Loading the data}
+
+The data is a simple 18 step matrix that should result in a ladderised tree.
+The matrix is available at this link \url{https://github.com/TGuillerme/Parsimony_Inapplicable/blob/master/Simple_example/18step_matrix.csv}.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## Reading in the matrix}
+\hlstd{matrix} \hlkwb{<-} \hlkwd{as.matrix}\hlstd{(}\hlkwd{read.csv}\hlstd{(}\hlstr{"18step_matrix.csv"}\hlstd{,} \hlkwc{header} \hlstd{= F,} \hlkwc{row.names}\hlstd{=}\hlnum{1}\hlstd{))}
+
+\hlcom{## Reading in the expected tree}
+\hlstd{expected_tree} \hlkwb{<-} \hlkwd{read.tree}\hlstd{(}
+    \hlkwc{text} \hlstd{=} \hlstr{"(t1,(t2,(t3,(t4,(t5,(t6,(t7,(t8,(t9,(t10,(t11,t12)))))))))));"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\section{Setting up the data to be used by \texttt{inapplicable}}
+
+A couple of transformations have to be made in order to feed the data to the \texttt{inapplicable} package:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## Creating the contrast matrix (function from IterativeAlgo)}
+\hlstd{contrast_matrix} \hlkwb{<-} \hlkwd{get.contrast.matrix}\hlstd{(matrix)}
+
+\hlcom{## Create the phyDat object}
+\hlstd{matrix_phyDat} \hlkwb{<-} \hlkwd{phyDat}\hlstd{(matrix,} \hlkwc{type} \hlstd{=} \hlstr{'USER'}\hlstd{,} \hlkwc{contrast} \hlstd{= contrast_matrix)}
+
+\hlcom{## Optimise the data for the inapplicable package analysis}
+\hlstd{matrix_inap} \hlkwb{<-} \hlkwd{prepare.data}\hlstd{(matrix_phyDat)}
+
+\hlcom{## Specify the names of the outgroup taxa}
+\hlstd{outgroup} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{'t1'}\hlstd{)}
+
+\hlcom{## Set random seed for generating the tree}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1}\hlstd{)}
+
+\hlcom{## Generate a random tree}
+\hlstd{rand_tree} \hlkwb{<-} \hlkwd{rtree}\hlstd{(}\hlkwd{nrow}\hlstd{(matrix),} \hlkwc{tip.label} \hlstd{=} \hlkwd{rownames}\hlstd{(matrix),} \hlkwc{br} \hlstd{=} \hlkwa{NULL}\hlstd{)}
+
+\hlcom{## Generate a NJ tree (with 0 branch length)}
+\hlstd{nj_tree} \hlkwb{<-} \hlkwd{root}\hlstd{(}\hlkwd{nj}\hlstd{(}\hlkwd{dist.hamming}\hlstd{(matrix_phyDat)), outgroup,} \hlkwc{resolve.root} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\hlstd{nj_tree}\hlopt{$}\hlstd{edge.length} \hlkwb{<-} \hlkwa{NULL}
+
+\hlcom{## Generate a list of trees}
+\hlstd{trees} \hlkwb{<-} \hlkwd{list}\hlstd{(expected_tree, rand_tree, expected_tree)}
+\hlkwd{class}\hlstd{(trees)} \hlkwb{<-} \hlstr{"multiPhylo"}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\section{Calculating parsimony}
+
+We can then calculate the parsimony score using the simple Fitch algorithm from \texttt{phytools} and the one from \texttt{inapplicable} using the expected tree, the random one and the NJ calculated one.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## Calculate the normal fitch parsimony score using the 3 trees}
+\hlstd{parsimony_fitch} \hlkwb{<-} \hlkwd{unlist}\hlstd{(}\hlkwd{lapply}\hlstd{(trees, parsimony, matrix_phyDat,}
+    \hlkwc{method} \hlstd{=} \hlstr{"fitch"}\hlstd{))}
+
+\hlcom{## Calculate the parsimony score using the inapplicable algorithm}
+\hlstd{parsimony_inapp} \hlkwb{<-} \hlkwd{unlist}\hlstd{(}\hlkwd{lapply}\hlstd{(trees, parsimony.inapp, matrix_inap))}
+
+\hlcom{## Displaying the results}
+\hlkwd{matrix}\hlstd{(}\hlkwd{c}\hlstd{(parsimony_fitch, parsimony_inapp),} \hlnum{2}\hlstd{,} \hlnum{3}\hlstd{,} \hlkwc{byrow} \hlstd{=} \hlnum{TRUE}\hlstd{,}
+    \hlkwc{dimnames} \hlstd{=} \hlkwd{list}\hlstd{(}\hlkwd{c}\hlstd{(}\hlstr{"Fitch parsimony"}\hlstd{,} \hlstr{"Inapp parsimony"}\hlstd{),}
+    \hlkwd{c}\hlstd{(}\hlstr{"Expecte_tree"}\hlstd{,} \hlstr{"Random_tree"}\hlstd{,} \hlstr{"NJ_tree"}\hlstd{)))}
+\end{alltt}
+\begin{verbatim}
+##                 Expecte_tree Random_tree NJ_tree
+## Fitch parsimony           30          79      30
+## Inapp parsimony           18          31      18
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We can also use the tree search algorithms from the \texttt{inapplicable} package.
+These functions do not seem to work properly (at least on the version of the \texttt{inapplicable} package I have, they crash \texttt{R}).
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{## Search for a better tree}
+\hlstd{better_tree} \hlkwb{<-} \hlkwd{tree.search}\hlstd{(expected_tree, matrix_inap, outgroup)}
+
+\hlcom{## Try a sectorial search (Goloboff, 1999)}
+\hlstd{better_tree} \hlkwb{<-} \hlkwd{sectorial.search}\hlstd{(rand_tree, matrix_inap)}
+
+\hlcom{## Try the parsimony ratchet (Nixon, 1999)}
+\hlstd{better_tree} \hlkwb{<-} \hlkwd{pratchet.inapp}\hlstd{(expected_tree, matrix_inap, outgroup)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\end{document}
