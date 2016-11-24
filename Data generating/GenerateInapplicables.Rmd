@@ -1,0 +1,97 @@
+---
+title: "Generate Inapplicable data"
+author: "[Thomas Guillerme](mailto:guillert@tcd.ie)"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+This is a quick example for simulating inapplicable data in R.
+
+Before starting
+===============
+
+You'll need `ape`, `phyclust`, `devtools` and `dispRity` packages.
+The latter needs to be installed *via* `devtools` as follows:
+
+```{r, eval = FALSE}
+if(!require(devtools)) install.packages("devtools")
+if(!require(ape)) install.packages("ape")
+if(!require(phyclust)) install.packages("phyclust")
+install_github("TGuillerme/dispRity", ref = "release")
+```
+
+Once installed, everything should be loaded:s
+
+```{r}
+library(devtools)
+library(ape)
+library(phyclust)
+library(dispRity)
+set.seed(0)
+```
+
+Generating the inapplicable characters
+===============
+
+Getting the trees
+---
+
+You'll need a tree first.
+Either an input tree:
+
+```{r, eval = FALSE}
+tree <- read.tree(text = "(a,(b,c));")
+```
+> Note that you can also get a newick tree using `read.tree(file = "myTreeFile.tre")` or a nexus one using `read.nexus(file = "myNexusFile.nex")`.
+
+Or generate a random one with `n` taxa (let's do 20).
+
+```{r}
+## Number of taxa
+n <- 20
+## Tree (birth-death)
+tree <- rphylo(n, 0.2, 0.05)
+```
+Generating the characters
+---
+
+The characters can be simulated using `sim.morpho` from the `dispRity` package following couple of parameters (rates, states, etc...).
+The idea is to first generate a binary character that will be our ''presence-absence'' one and a second one that will be the states of the present feature:
+
+```{r}
+## The overall character rate
+overall_rate <- c(rgamma, rate = 5, shape = 10)
+
+## The first character ("presence-absence")
+presence_absence <- sim.morpho(tree, characters = 1, rates = overall_rate,
+    invariant = FALSE)
+
+## The first character ("presence_states-absence")
+presence_states <- sim.morpho(tree, characters = 1, states = c(0.75, 0.15, 0.1),
+    rates = overall_rate, invariant = FALSE)
+
+## Combine the two characters
+matrix <- matrix(c(presence_absence, presence_states), ncol = 2, byrow = FALSE)
+rownames(matrix) <- rownames(presence_states)
+
+```
+
+We can then apply the inapplicable data using the first character (presence/absences):
+
+```{r}
+matrix <- apply.inapplicable(matrix, inapplicables = "character")
+```
+
+By default, the first character is used for generating the inapplicable data on the second character. Any `0` will be translated into an inapplicable character on the next character.
+
+Visualising the character
+---
+
+
+```{r, fig.align='center',fig.width=8, fig.height=8}
+plot(tree, show.tip.label = TRUE, label.offset = 0, cex = 0.7)
+tiplabels(pch = 21, bg = c("white", "black")[as.factor(matrix[,1])], cex = 1.1, adj = 1.2)
+tiplabels(text = as.character(matrix[,2]), cex = 0.7, adj = -5.4, frame = "none")
+```
+
+<!-- matrix[,2] <- gsub("-", "–", matrix[,2]) -->
